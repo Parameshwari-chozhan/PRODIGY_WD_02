@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circular Stopwatch with Laps</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: white;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .stopwatch {
+            text-align: center;
+            position: relative;
+        }
+
+        .circle-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+        }
+
+        .circle {
+            border-radius: 50%;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 10px solid #333;
+            border-top-color: transparent;
+            border-bottom-color: transparent;
+            animation: spin 1s linear infinite;
+            transform-origin: center;
+            transform: rotate(0deg);
+        }
+
+        .circle-inner {
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 200px;
+            background-color: #fff;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .display {
+            font-size: 48px;
+            z-index: 2;
+            position: relative;
+        }
+
+        .controls {
+            margin-top: 20px;
+            z-index: 2;
+            position: relative;
+        }
+
+        .controls button {
+            font-size: 16px;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        .laps {
+            margin-top: 20px;
+            z-index: 2;
+            position: relative;
+        }
+
+        .laps ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .laps li {
+            font-size: 18px;
+            margin: 5px 0;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stopwatch">
+        <div class="circle-container">
+            <div class="circle"></div>
+            <div class="circle-inner">
+                <div class="display">
+                    <span id="minutes">00</span>:<span id="seconds">00</span>:<span id="milliseconds">00</span>
+                </div>
+            </div>
+        </div>
+        <div class="controls">
+            <button id="start">Start</button>
+            <button id="stop">Stop</button>
+            <button id="reset">Reset</button>
+            <button id="lap">Lap</button>
+        </div>
+        <div class="laps">
+            <h2>Lap Times</h2>
+            <ul id="lapList"></ul>
+        </div>
+    </div>
+
+    <script>
+        let startTime, updatedTime, difference, tInterval;
+        let minutes = 0, seconds = 0, milliseconds = 0;
+        let running = false;
+        let lapCount = 1;
+
+        const startButton = document.getElementById('start');
+        const stopButton = document.getElementById('stop');
+        const resetButton = document.getElementById('reset');
+        const lapButton = document.getElementById('lap');
+        const minutesDisplay = document.getElementById('minutes');
+        const secondsDisplay = document.getElementById('seconds');
+        const millisecondsDisplay = document.getElementById('milliseconds');
+        const lapList = document.getElementById('lapList');
+        const circle = document.querySelector('.circle');
+
+        function startTimer() {
+            if (!running) {
+                startTime = new Date().getTime();
+                tInterval = setInterval(updateTime, 1);
+                running = true;
+                circle.style.animation = `spin ${1}s linear infinite`;
+            }
+        }
+
+        function stopTimer() {
+            clearInterval(tInterval);
+            running = false;
+            circle.style.animation = 'none';
+        }
+
+        function resetTimer() {
+            clearInterval(tInterval);
+            running = false;
+            minutes = 0;
+            seconds = 0;
+            milliseconds = 0;
+            updateDisplay();
+            lapList.innerHTML = '';
+            lapCount = 1;
+            circle.style.animation = 'none';
+        }
+
+        function lapTimer() {
+            if (running) {
+                const lapTime = `${formatNumber(minutes)}:${formatNumber(seconds)}:${formatNumber(milliseconds)}`;
+                const lapItem = document.createElement('li');
+                lapItem.textContent = `Lap ${lapCount++}: ${lapTime}`;
+                lapList.appendChild(lapItem);
+            }
+        }
+
+        function updateTime() {
+            updatedTime = new Date().getTime();
+            difference = updatedTime - startTime;
+
+            milliseconds = Math.floor((difference % 1000) / 10);
+            seconds = Math.floor((difference / 1000) % 60);
+            minutes = Math.floor((difference / (1000 * 60)) % 60);
+
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            millisecondsDisplay.innerHTML = formatNumber(milliseconds);
+            secondsDisplay.innerHTML = formatNumber(seconds);
+            minutesDisplay.innerHTML = formatNumber(minutes);
+        }
+
+        function formatNumber(number) {
+            return number < 10 ? '0' + number : number;
+        }
+
+        startButton.addEventListener('click', startTimer);
+        stopButton.addEventListener('click', stopTimer);
+        resetButton.addEventListener('click', resetTimer);
+        lapButton.addEventListener('click', lapTimer);
+    </script>
+</body>
+</html>
